@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 
-export const ScoreView: FC = () => {
+export const ScoreHistories: FC = () => {
   return (
     <div>
         <div className="flex justify-start md:justify-center items-center mt-10 text-black gap-8 border border-gray-400 p-5 hover:bg-gray-100">
