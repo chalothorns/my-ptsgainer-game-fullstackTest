@@ -1,20 +1,60 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
-import { ScoreHistories } from "./components/ScoreHistories";
-import { HistoryView } from "./components/HistoryView";
+import { RewardsHistory } from "./components/RewardsHistory";
 import { RewardPointsCard } from "./components/RewardPointsCard";
+import axios from "axios";
+import api from "./lib/axios";
+import { ScoreHistories } from "./components/ScoreHistories";
 
-// interface Data {
-
-// }
 export default function Home() {
   const [view, setView] = useState<"score" | "history">("score");
   const [modalReward, setModalReward] = useState<boolean>(false);
+  const [scores, setScores] = useState<number>(0);
   const closeModal = () => setModalReward(false);
-  
-  
+
+
+      const currentScore = async () => {
+      try {
+        const response = await api.get("/users/6");
+        setScores(response.data?.totalScore ?? 0);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error(
+            "บันทึกไม่สำเร็จ",
+            error.response?.data || error.message,
+          );
+        } else {
+          console.error("เกิดข้อผิดพลาด", error);
+        }
+      }
+    };  
+
+  useEffect(() => {
+    currentScore();
+  }, []);
+
+   const reset = async() => {
+    try {
+      await api.patch("/users/6/reset");
+      alert("รีเซ็ตคะแนนสำเร็จ")
+      await currentScore();
+
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+          console.error(
+            "บันทึกไม่สำเร็จ",
+            error.response?.data || error.message,
+          );
+        } else {
+          console.error("เกิดข้อผิดพลาด", error);
+      }   
+    }
+  } 
+
+    
+
+
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white">
@@ -24,16 +64,22 @@ export default function Home() {
            <RewardPointsCard 
            modalReward={modalReward}
            setModalReward={setModalReward}
+           scores={scores}
            onClose={closeModal}
+           
            />
           </div>
         </div>
-        <button className="flex justify-center items-center transition-transform duration-200 ease-out active:scale-90">
-          <h3 className="w-fit rounded-full bg-blue-700 hover:bg-blue-600 font-bold text-xl mt-6 py-1 px-5 cursor-pointer">
-            RESET
-          </h3>
+
+        
+        <div className="flex justify-center items-center mt-6">
+        <button 
+        className="transition-transform duration-200 ease-out active:scale-90 w-fit rounded-full bg-blue-700 hover:bg-blue-600 font-bold text-xl mt-6 py-1 px-5 cursor-pointer"
+        onClick={reset}>
+          RESET
         </button>
-        <div className="text-gray-500  text-lg flex justify-start md:justify-center mt-10 ml-4">
+        </div>
+        <div className="text-gray-500  text-lg flex justify-start md:justify-center mt-10 mb-10 ml-4">
           <button
             className={`py-2 px-4 mr-4  border rounded-full cursor-pointer ${view === "score" ? "border border-red-500 text-red-500" : null}`}
             onClick={() => setView("score")}
@@ -48,7 +94,10 @@ export default function Home() {
             ประวัติรางวัล
           </button>
         </div>
-        {view === "score" ? <ScoreHistories /> : <HistoryView />}
+        {view === "score" ? 
+        <ScoreHistories
+
+         /> : <RewardsHistory />}
       </main>
       <div>
         <Footer />

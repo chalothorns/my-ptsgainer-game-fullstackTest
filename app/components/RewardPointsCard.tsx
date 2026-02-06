@@ -1,14 +1,18 @@
 import Image from "next/image";
 import React, { useState } from "react";
+import api from "../lib/axios";
+import axios from "axios";
 
 
 interface RewardProps {
   modalReward: boolean;
   setModalReward: React.Dispatch<React.SetStateAction<boolean>>
   onClose: () => void;
+  scores: number;
 }
 
-export const RewardPointsCard = ({modalReward, setModalReward, onClose}: RewardProps) => {
+
+export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}: RewardProps) => {
   const currentScore = 8500;
   const maxScore = 10000;
   // คำนวณเปอร์เซ็นต์สำหรับหลอด
@@ -16,19 +20,41 @@ export const RewardPointsCard = ({modalReward, setModalReward, onClose}: RewardP
 
   const [selectedReward, setSelectedReward] =useState<string>("");
 
+  const getReward = async (rewardType: string) => {
+
+      try {
+        const response = await api.post("/reward-histories", {
+          rewardType: rewardType,
+          claimedAt: new Date().toISOString(),
+          userId: 6,
+        });
+
+        setSelectedReward(rewardType)
+        setModalReward(true)
+        return response.data;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          console.error("บันทึกไม่สำเร็จ", error.response?.data || error.message);
+        } else {
+          console.error("เกิดข้อผิดพลาด", error);
+        } 
+      }
+    };
+
   function TypeReward(reward:string) {
     switch(reward){
-      case 'rewardA':
+      case 'ได้รับรางวัล A':
         return "คุณได้รับรางวัล A";
-      case 'rewardB':
+      case 'ได้รับรางวัล B':
         return "คุณได้รับรางวัล B";
-      case 'rewardC':
+      case 'ได้รับรางวัล C':
         return "คุณได้รับรางวัล C"
       default:
       return "ไม่พบข้อมูลรางวัล";
 
     }
   }
+
 
    const formPopup = modalReward
     ? "max-h-screen opacity-100"
@@ -69,7 +95,7 @@ export const RewardPointsCard = ({modalReward, setModalReward, onClose}: RewardP
         <p className="font-semibold text-base md:text-lg mt-1">
           คะแนนครบ 10,000 รับรางวัลใหญ่
         </p>
-        <p className="font-bold text-2xl text-red-500">8,500/10,000</p>
+        <p className="font-bold text-2xl text-red-500">{scores}/10,000</p>
       </div>
 
       <div className="w-full max-w-5xl px-8 py-14 bg-white -m-2 md:mx-auto">
@@ -108,24 +134,15 @@ export const RewardPointsCard = ({modalReward, setModalReward, onClose}: RewardP
           <div className="flex sm:justify-center md:justify-end mt-10 gap-4">
             <button 
             className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
-            onClick={() => {setModalReward(true)
-              setSelectedReward('rewardA')
-            }
-            }
-            >ได้รางวัล A แล้ว</button>
+            onClick={() => getReward('ได้รับรางวัล A')}
+            >กดรับรางวัล A</button>
             <button 
             className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
-            onClick={() => {setModalReward(true)
-              setSelectedReward('rewardB')
-            }
-            }
+            onClick={() => getReward('ได้รับรางวัล B')}
             >กดรับรางวัล B</button>
             <button 
             className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
-            onClick={() => {setModalReward(true)
-              setSelectedReward('rewardC')
-            }
-            }>กดรับรางวัล C</button>
+            onClick={() => getReward('ได้รับรางวัล C')}>กดรับรางวัล C</button>
       
   
             

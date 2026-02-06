@@ -1,14 +1,61 @@
 "use client";
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import api from "../lib/axios";
+
 export default function GamePage() {
   const [isRolling, setIsRolling] = useState<boolean>(false);
   const [scoreView, setScoreView] = useState<number>();
   const [modalReward, setModalReward] = useState(false);
+  const [scores, setScores] = useState<number>(0);
+
+
+
+
   const closeModal = () => setModalReward(false);
 
   const formPopup = modalReward
     ? "max-h-screen opacity-100"
     : "max-h-0 opacity-0 overflow-hidden mt-0";
+
+    const currentScore = async () => {
+      try {
+        const response = await api.get("/users/6");
+        setScores(response.data?.totalScore || 0);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error(
+            "บันทึกไม่สำเร็จ",
+            error.response?.data || error.message,
+          );
+        } else {
+          console.error("เกิดข้อผิดพลาด", error);
+        }
+      }
+    };
+
+  useEffect(() => {
+    currentScore();
+  }, []);
+
+  const saveScore = async (finalScore: number) => {
+    try {
+      const response = await api.post("/play-histories", {
+        ptsReceived: finalScore,
+        playedAt: new Date().toISOString(),
+        userId: 6,
+      });
+      await currentScore();      
+
+      return response.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("บันทึกไม่สำเร็จ", error.response?.data || error.message);
+      } else {
+        console.error("เกิดข้อผิดพลาด", error);
+      }
+    }
+  };
 
   function startRandomPts() {
     setIsRolling(true);
@@ -24,10 +71,11 @@ export default function GamePage() {
         clearInterval(interval);
         setIsRolling(false);
         setModalReward(true);
-        // saveToBackend(randomValue);
+        saveScore(randomValue);
       }
     }, 100);
   }
+    
 
   return (
     <div>
@@ -57,9 +105,9 @@ export default function GamePage() {
       </div>
 
       <h1 className="relative flex flex-col items-center mt-4 text-2xl text-black font-bold">
-        คะแนนสะสม 8,500/10,000
+        คะแนนสะสม {scores}/10,000
       </h1>
-      
+
       {/* Points board */}
       <div className=" text-black">
         <div className="flex gap-2 md:gap-4 absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
