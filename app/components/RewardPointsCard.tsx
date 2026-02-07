@@ -162,17 +162,17 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose, 
 
           <div className="flex sm:justify-center md:justify-end mt-10 gap-4">
             <button 
-            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedA ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedA ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-red-400"}`}
             onClick={() => getReward('ได้รับรางวัล A')}
             disabled={isLockedA}
             >{hasA ? "ได้รางวัล A แล้ว" : "กดรับรางวัล A"}</button>
             <button 
-            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedB ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedB ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-red-400"}`}
             onClick={() => getReward('ได้รับรางวัล B')}
             disabled={isLockedB}
             >{hasB ? "ได้รางวัล B แล้ว" : "กดรับรางวัล B"}</button>
             <button 
-            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedC ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedC ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-red-400"}`}
             onClick={() => getReward('ได้รับรางวัล C')}
             disabled={isLockedC}
             >{hasC ? "ได้รางวัล C แล้ว" : "กดรับรางวัล C"}</button>
