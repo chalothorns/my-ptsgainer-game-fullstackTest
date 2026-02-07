@@ -7,17 +7,35 @@ import axios from "axios";
 import api from "./lib/axios";
 import { ScoreHistories } from "./components/ScoreHistories";
 
+export interface RewardHistoryItem {
+  id: number;
+  rewardType: string;
+  claimedAt: string;
+}
+
+export interface PlayHistoryItem {
+  ptsReceived: number;
+  playedAt: Date;
+}
+
 export default function Home() {
   const [view, setView] = useState<"score" | "history">("score");
   const [modalReward, setModalReward] = useState<boolean>(false);
   const [scores, setScores] = useState<number>(0);
+  const [claimedRewards, setClaimedRewards] = useState<RewardHistoryItem[]>([]);
+  const [userName, setUserName] = useState<string>("");
   const closeModal = () => setModalReward(false);
+
+  const [scoreHistories, setScoreHistories] = useState<PlayHistoryItem[]>([]);
 
 
       const currentScore = async () => {
       try {
         const response = await api.get("/users/6");
+        setUserName(response.data?.name ?? []);
         setScores(response.data?.totalScore ?? 0);
+        setClaimedRewards(response.data?.rewardHistories ?? []);
+        setScoreHistories(response.data?.playHistories ?? []);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.error(
@@ -38,7 +56,9 @@ export default function Home() {
     try {
       await api.patch("/users/6/reset");
       alert("รีเซ็ตคะแนนสำเร็จ")
-      await currentScore();
+      setScores(0);
+      setClaimedRewards([]);
+      setScoreHistories([]);
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -66,6 +86,9 @@ export default function Home() {
            setModalReward={setModalReward}
            scores={scores}
            onClose={closeModal}
+           claimedRewards={claimedRewards}
+           onSuccess={currentScore}
+           username={userName}
            
            />
           </div>
@@ -96,8 +119,12 @@ export default function Home() {
         </div>
         {view === "score" ? 
         <ScoreHistories
+        data={scoreHistories}
 
-         /> : <RewardsHistory />}
+         /> : 
+         <RewardsHistory 
+         data={claimedRewards}
+         />}
       </main>
       <div>
         <Footer />

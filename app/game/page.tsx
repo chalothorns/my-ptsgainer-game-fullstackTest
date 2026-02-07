@@ -10,9 +10,10 @@ export default function GamePage() {
   const [scores, setScores] = useState<number>(0);
 
 
-
-
   const closeModal = () => setModalReward(false);
+
+  const maxScore = 10000;
+  const endGame = Math.min(scores, maxScore, 10000);
 
   const formPopup = modalReward
     ? "max-h-screen opacity-100"
@@ -105,7 +106,7 @@ export default function GamePage() {
       </div>
 
       <h1 className="relative flex flex-col items-center mt-4 text-2xl text-black font-bold">
-        คะแนนสะสม {scores}/10,000
+        คะแนนสะสม {endGame}/10000
       </h1>
 
       {/* Points board */}
@@ -137,8 +138,8 @@ export default function GamePage() {
 
         {/* Roliing button */}
         <button
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white hover:bg-red-400  py-2 px-8 font-bold text-3xl rounded-2xl ${isRolling ? "bg-red-400 ursor-not-allowed" : "bg-red-500 cursor-pointer"}`}
-          disabled={isRolling}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white hover:bg-red-400  py-2 px-8 font-bold text-3xl rounded-2xl ${isRolling || scores >= maxScore ? "bg-red-400 ursor-not-allowed" : "bg-red-500 cursor-pointer"}`}
+          disabled={isRolling || scores >= maxScore}
           onClick={startRandomPts}
         >
           {isRolling ? "กำลังสุ่ม..." : "สุ่มคะแนน"}

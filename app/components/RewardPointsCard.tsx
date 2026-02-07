@@ -2,6 +2,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import api from "../lib/axios";
 import axios from "axios";
+import { RewardHistoryItem } from "../page";
 
 
 interface RewardProps {
@@ -9,17 +10,33 @@ interface RewardProps {
   setModalReward: React.Dispatch<React.SetStateAction<boolean>>
   onClose: () => void;
   scores: number;
+  claimedRewards: RewardHistoryItem[];
+  onSuccess: () => void;
+  username: string
 }
 
 
-export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}: RewardProps) => {
-  const currentScore = 8500;
+export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose, claimedRewards, onSuccess, username}: RewardProps) => {
+  
   const maxScore = 10000;
-  // คำนวณเปอร์เซ็นต์สำหรับหลอด
-  const progressPercent = (currentScore / maxScore) * 100;
+  const endGame = Math.min(scores, maxScore, 10000);
+  //ใส่คะแนนปัจจุบันหารด้วย maxScore คูณด้วย 100 เพื่อคำนวนเป็น % เพื่อเอาไว้ให้ progress bar ขยับตาม % ส่วน ,100 คือบอกว่าถ้า score ปัจจุบัน คำนวนออกมาเกิน 100% progress bas จะไม่เดินต่อแล้ว maxที่ 100%
+  const progressPercent = Math.min((scores / maxScore) * 100, 100);
 
   const [selectedReward, setSelectedReward] =useState<string>("");
+  const hasA = claimedRewards.some(r => r.rewardType === 'ได้รับรางวัล A');
+  const isLockedA = scores < 5000 || hasA;
+  const notClaimedA = !isLockedA
 
+  const hasB = claimedRewards.some(r => r.rewardType === 'ได้รับรางวัล B');
+  const isLockedB = scores < 7500 || hasB;
+  const notClaimedB = !isLockedB
+
+  const hasC = claimedRewards.some(r => r.rewardType === 'ได้รับรางวัล C');
+  const isLockedC = scores < 10000 || hasC;
+  const notClaimedC = !isLockedC
+
+  
   const getReward = async (rewardType: string) => {
 
       try {
@@ -29,8 +46,10 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}:
           userId: 6,
         });
 
+        await onSuccess();
         setSelectedReward(rewardType)
         setModalReward(true)
+        
         return response.data;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -40,6 +59,8 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}:
         } 
       }
     };
+
+
 
   function TypeReward(reward:string) {
     switch(reward){
@@ -84,7 +105,7 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}:
         onClick={onClose}>ปิด</button>
       </div>
     </div>
-      <h3 className="mt-1 text-center text-gray-400">ชื่อ-นามสกุล</h3>
+      <h3 className="mt-1 text-center text-gray-400">{username}</h3>
 
       <div className="absolute w-fit text-start py-2 px-6 bg-red-800 rounded-r-full cursor-pointer">
         แชร์คะแนน
@@ -95,7 +116,7 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}:
         <p className="font-semibold text-base md:text-lg mt-1">
           คะแนนครบ 10,000 รับรางวัลใหญ่
         </p>
-        <p className="font-bold text-2xl text-red-500">{scores}/10,000</p>
+        <p className="font-bold text-2xl text-red-500">{endGame}/10000</p>
       </div>
 
       <div className="w-full max-w-5xl px-8 py-14 bg-white -m-2 md:mx-auto">
@@ -108,41 +129,53 @@ export const RewardPointsCard = ({modalReward, setModalReward, scores, onClose}:
 
           {/* Progress */}
           <div className="relative w-full h-4 bg-gray-200 rounded-full">
-            <div 
+            {/* มันเอาค่าจาก progressPercent มากำหนดค่าความกว้างของหลอด */}
+          <div 
           className="absolute h-full bg-linear-to-r from-orange-400 to-orange-600 rounded-full shadow-[0_0_15px_rgba(251,146,60,0.6)]"
           style={{ width: `${progressPercent}%` }}
-        />
+        /> 
 
         {/* Checkpoints 5,000 pts */}
-          <div className="absolute left-[50%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-green-700 rounded-full border-4 border-white flex items-center justify-center text-white text-xs">
+          <div className={`absolute left-[50%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center text-white text-xs ${scores >= 5000 ? 'bg-green-700': 'bg-gray-400'}`}>
             ✓
           </div>
 
           {/* Checkpoints 7,500 pts */}
-          <div className="absolute left-[75%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-gray-400 rounded-full border-4 border-white flex items-center justify-center text-white text-xs">
+          <div className={`absolute left-[75%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center text-white text-xs ${scores >= 7500 ? 'bg-green-700': 'bg-gray-400'}`}>
             ✓
           </div>
           {/* Checkpoints 10,000 pts */}
-          <div className="absolute left-full top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-yellow-400 rounded-full border-4 border-orange-300 flex items-center justify-center shadow-lg text-white text-xs">
-            <span className="text-xl">👑</span>
+          <div className="absolute left-full top-1/2 -translate-x-1/2 -translate-y-1/2 w-30 h-12  rounded-full flex items-center justify-center ">
+            
+        <Image 
+        src="/coin.png"
+        alt="coin-reward"
+        width={100}
+        height={128}
+        className="object-contain"
+        />
           </div>
 
-          {/* Current position */}
+          {/* Current position // left: ${progressPercent}%: ส่วนนี้สั่งให้ลูกบอลสีแดงวิ่งไปวางตำแหน่งเดียวกับปลายหลอดสีส้ม */}
             <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full border-4 border-orange-200 shadow-orange-500/50 shadow-lg" style={{ left: `${progressPercent}%`}}></div>
           </div>   
 
           <div className="flex sm:justify-center md:justify-end mt-10 gap-4">
             <button 
-            className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedA ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
             onClick={() => getReward('ได้รับรางวัล A')}
-            >กดรับรางวัล A</button>
+            disabled={isLockedA}
+            >{hasA ? "ได้รางวัล A แล้ว" : "กดรับรางวัล A"}</button>
             <button 
-            className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedB ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
             onClick={() => getReward('ได้รับรางวัล B')}
-            >กดรับรางวัล B</button>
+            disabled={isLockedB}
+            >{hasB ? "ได้รางวัล B แล้ว" : "กดรับรางวัล B"}</button>
             <button 
-            className="bg-red-600 text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full cursor-pointer transition-transform duration-200 ease-out active:scale-90"
-            onClick={() => getReward('ได้รับรางวัล C')}>กดรับรางวัล C</button>
+            className={` text-white font-bold text-sm md:text-base p-1 md:p-2 rounded-full ${notClaimedC ? "bg-red-600 cursor-pointer transition-transform duration-200 ease-out active:scale-90" : "bg-gray-400"}`}
+            onClick={() => getReward('ได้รับรางวัล C')}
+            disabled={isLockedC}
+            >{hasC ? "ได้รางวัล C แล้ว" : "กดรับรางวัล C"}</button>
       
   
             

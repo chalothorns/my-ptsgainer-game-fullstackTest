@@ -1,34 +1,12 @@
 import React, { useEffect, useState } from "react";
-import api from "../lib/axios";
-import axios from "axios";
+import { PlayHistoryItem } from "../page";
 
-interface PlayHistoryItem {
-  ptsReceived: number;
-  playedAt: Date;
+interface ScoreHistoriesProp {
+  data: PlayHistoryItem[];
 }
 
-export const ScoreHistories = () => {
-  const [data, setData] = useState<PlayHistoryItem[]>([]);
+export const ScoreHistories = ({data}:ScoreHistoriesProp) => {
 
-  useEffect(() => {
-    const playHistories = async () => {
-      try {
-        const response = await api.get("/users/6");
-        setData(response.data?.playHistories ?? []);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error(
-            "ดึงคะแนนไม่สำเร็จ",
-            error.response?.data || error.message,
-          );
-        } else {
-          console.error("เกิดข้อผิดพลาด", error);
-        }
-      }
-    };
-
-    playHistories();
-  }, []);
   return (
     <>
       {data && data.length > 0 ? (
